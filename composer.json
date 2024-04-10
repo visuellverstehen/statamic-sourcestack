@@ -1,0 +1,40 @@
+{
+    "name": "visuellverstehen/statamic-sourcestack",
+    "description": "A Statamic utility to only include css/js sources once.",
+    "keywords": [ "statamic", "addon", "js", "css", "vite" ],
+    "license": "MIT",
+    "type": "statamic-addon",
+    "autoload": {
+        "psr-4": {
+            "VV\\SourceStack\\": "src"
+        }
+    },
+    "authors": [
+        {
+            "name": "visuellverstehen"
+        }
+    ],
+    "support": {
+        "email": "hello@visuellverstehen.de"
+    },
+    "extra": {
+        "statamic": {
+            "name": "Statamic SourceStack",
+            "description": "A Statamic utility to only include css/js sources once."
+        },
+        "laravel": {
+            "providers": [
+                "VV\\SourceStack\\ServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": "^8.0",
+        "statamic/cms": "^4.0 || ^5.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "pixelfear/composer-dist-plugin": true
+        }
+    }
+}
