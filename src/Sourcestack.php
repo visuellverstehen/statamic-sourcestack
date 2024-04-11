@@ -163,7 +163,7 @@ class Sourcestack extends Tags
         $key = $this->getKey();
         
         $sources = Blink::get($key) ?? [];
-        $file = $this->folder . $file;
+        $file = $this->folder . trim($file);
         
         if ($this->extension) {
             $file .= ".{$this->extension}";
