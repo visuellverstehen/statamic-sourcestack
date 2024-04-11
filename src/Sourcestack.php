@@ -16,6 +16,12 @@ class Sourcestack extends Tags
     
     protected $extension;
     protected $folder;
+    protected $stack;
+    
+    public function __construct()
+    {
+        $this->folder = config('sourcestack.base_dir');
+    }
     
     /**
      * {{ sourcestack file="[src]" }}.
@@ -29,16 +35,16 @@ class Sourcestack extends Tags
             return;
         }
         
-        $this->setFolder();
+        $this->resolveStack();
         $this->store($file);
     }
     
     /**
-     * {{ sourcestack:out }}
+     * {{ sourcestack:render }}
      *
-     * Displays vitejs link/script tags for all stored sources.
+     * Renders vitejs link/script tags for all stored sources.
      */
-    public function out(): string
+    public function render(): string
     {
         return $this->output();
     }
@@ -46,20 +52,22 @@ class Sourcestack extends Tags
     /**
      * {{ sourcestack:vite }}
      *
-     * Displays vitejs link/script tags for all stored sources.
+     * Alias for render()
      */
     public function vite(): string
     {
         return $this->output();
     }
     
-    private function setFolder(?string $folder = null): void
+    private function getKey(): string
     {
-        if (! $this->folder) {
-            $this->folder = $folder ?? config('sourcestack.base_dir');
+        $key = self::BLINK_KEY;
+            
+        if ($this->stackExists()) {
+            $key .= "-{$this->stack}";
         }
         
-        $this->folder = Stringy::ensureRight($this->folder, '/');
+        return $key;
     }
     
     private function getViteSource(string $file): string|array
@@ -78,23 +86,57 @@ class Sourcestack extends Tags
         return $vite->index();
     }
     
-    private function resolvePreset(string|array $preset): ?string
+    private function output(): string
     {
-        if (is_string($preset)) {
-            return $preset;
+        $this->resolveStack(true);
+        
+        return collect(Blink::get($this->getKey()) ?? [])
+            ->map(function ($file) {
+                return $this->getViteSource($file);
+            })
+            ->filter()
+            ->implode("\n");
+    }
+    
+    private function resolveStack(bool $skipSetup = false)
+    {
+        if (! $this->stack && $stack = $this->params->get('stack')) {
+            $this->stack = $stack;
         }
         
-        $ext = array_key_exists('extension', $preset) ? 
-            $preset['extension'] :
-            null;
+        if ($skipSetup || ! $this->stackExists()) {
+            return;
+        }
         
-        if (array_key_exists('path', $preset)) {
-            $this->extension = $ext;
+        $stack = config('sourcestack.stacks')[$this->stack];
+        
+        if (is_string($stack)) {
+            $this->setFolder($stack);
             
-            return $preset['path'];
+            return;
         }
         
-        return null;
+        if (array_key_exists('extension', $stack)) {
+            $this->extension = $stack['extension'];
+        }
+        
+        if (array_key_exists('base_dir', $stack)) {
+            $this->setFolder($stack['base_dir']);
+        }
+    }
+    
+    private function setFolder(?string $folder = null): void
+    {
+        $this->folder = $folder ?? config('sourcestack.base_dir');
+        $this->folder = Stringy::ensureRight($this->folder, '/');
+    }
+    
+    private function stackExists(): bool
+    {   
+        return 
+            is_string($this->stack) && 
+            ! empty($this->stack) && 
+            array_key_exists($this->stack, config('sourcestack.stacks'));
     }
     
     private function store(string|array $file): void
@@ -118,7 +160,9 @@ class Sourcestack extends Tags
     
     private function storeSourceInBlink(string $file)
     {
-        $sources = Blink::get(self::BLINK_KEY) ?? [];
+        $key = $this->getKey();
+        
+        $sources = Blink::get($key) ?? [];
         $file = $this->folder . $file;
         
         if ($this->extension) {
@@ -127,38 +171,26 @@ class Sourcestack extends Tags
     
         if (! in_array($file, $sources)) {
             $sources[] = $file;
-            Blink::put(self::BLINK_KEY, $sources);
+            Blink::put($key, $sources);
         }
     }
     
-    private function output(): string
-    {
-        return collect(Blink::get(self::BLINK_KEY) ?? [])
-            ->map(function ($file) {
-                return $this->getViteSource($file);
-            })
-            ->filter()
-            ->implode("\n");
-    }
-    
     /**
-     * {{ sourcestack:[presetname] }}
+     * {{ sourcestack:[stack] }}
      *
-     * Stores a file within a preset folder.
+     * Stores a file within a dedicated stack.
      * @see config/sourcestack.php
      */
     public function __call($method, $args): void
     {
-        $preset = explode(':', $this->tag, 2)[1];
+        $stack = explode(':', $this->tag, 2)[1];
         
-        if (! array_key_exists($preset, config('sourcestack.presets'))) {
+        if (! array_key_exists($stack, config('sourcestack.stacks'))) {
             // TODO: exception
             return;
         }
         
-        $this->setFolder(
-            $this->resolvePreset(config('sourcestack.presets')[$preset])
-        );
+        $this->stack = $stack;
         $this->index();
     }
 }

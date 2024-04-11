@@ -18,28 +18,23 @@ return [
     
     /*
     |--------------------------------------------------------------------------
-    | Folder presets
+    | Dedicated stacks
     |--------------------------------------------------------------------------
     |
-    | Define additional folders for specific files as shortcuts.
-    | Each key in the array defines a path relative to the project root.
-    | 
-    | Example: 
-    |   'js' => 'resources/js/'
-    |   {{ sourcestack:js src="slider.js" }}
-    |
-    | You can optionally define a file extension to use. The definition
-    | extends to an array in this case:
+    | Define isolated stacks for dedicated files. Each stack can have
+    | its own base_dir and a default extension. A dedicated stack
+    | can be rendered independently from the default stack.
     | 
     |   'js' => [
-    |       'path' => 'resources/js/',
+    |       'base_dir' => 'resources/js/',
     |       'extension' => 'js',
     |   ]
     |   {{ sourcestack:js src="slider" }}
+    |   {{ sourcestack:render stack="js" }}
     |
     */
     
-    'presets' => [
+    'stacks' => [
         //
     ],
 ];
