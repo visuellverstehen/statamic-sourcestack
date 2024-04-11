@@ -12,23 +12,37 @@ Assume a basic Statamic blueprint with a replicator field `pagebuilder` that sta
 {{ /pagebuilder }}
 ```
 
-Further assume that there is a "slider" set, which requires a dedicated javascript source file:
+Further assume that there is an 'image' and a 'gallery' set, which both require dedicated javascript source files:
 
 ```antlers
-<!-- sets/slider.antlers.html -->
+<!-- sets/image.antlers.html -->
 
-<div class="slider">
-    …
-</div>
+<img src"…" class="lightbox">
 
-{{ push:scripts }}
-    {{ vite src="resources/js/slider.js" }}
-{{ /push:scripts }}
+{{ once }}
+    {{ push:scripts }}
+        {{ vite src="resources/js/lightbox.js" }}
+    {{ /push:scripts }}
+{{ /once }}
 ```
 
-The scripts [stack](https://statamic.dev/antlers#stacks) is rendered in the layout.
+```antlers
+<!-- sets/gallery.antlers.html -->
 
-Problem is: if you add multiple sliders in a page, the script file will also be added multiple times. The stack has no way to determine if a file was already added or not.
+<ul class="gallery">
+    …
+</ul>
+
+{{ once }}
+    {{ push:scripts }}
+        {{ vite src="resources/js/lightbox.js|resources/js/slider.js" }}
+    {{ /push:scripts }}
+{{ /once }}
+```
+
+By using the [`once`](https://statamic.dev/antlers#once) tag we try make sure to only include every source once. The `scripts` [stack](https://statamic.dev/antlers#stacks) is rendered in the layout.
+
+However, if you add both an image and a gallery in a page, the `lightbox.js` script file will be added twice. The stack has no way to determine if a file was already added or not.
 
 This is where SourceStack comes in.
 
@@ -45,13 +59,11 @@ composer require visuellverstehen/statamic-sourcestack
 Let's modify the Statamic setup described above. Instead of using the `scripts` stack for our js source, we use the `sourcestack` tag included in this package:
 
 ```antlers
-<!-- sets/slider.antlers.html -->
+<!-- sets/image.antlers.html -->
 
-<div class="slider">
-    …
-</div>
+<img src"…" class="lightbox">
 
-{{ sourcestack src="resources/js/slider.js" }}
+{{ sourcestack src="resources/js/lightbox.js" }}
 ```
 
 The tag collects all the sources throughout the template, making sure to add every source only once. Eventually, the `sourcestack:render` tag renders all collected sources as a vite source tag.
@@ -72,7 +84,7 @@ The tag collects all the sources throughout the template, making sure to add eve
 You can also use the tag alias `srcstk`. Sources can be added with the `src`, `source` or `file` parameter. Output can be generated with `render` or `vite`.
 
 ```antlers
-{{ srcstk src="slider.js" }}
+{{ srcstk src="lightbox.js" }}
 {{ srcstk:vite }}
 ```
 
@@ -91,7 +103,7 @@ If you need multiple stacks for different sources, you can define dedicated stac
 For each stack you can optionally define a base directory and a file extension. Assuming the example above, the tag would be used like this:
 
 ```antlers
-{{ sourcestack:css src="slider" }}
+{{ sourcestack:css src="gallery" }}
 {{ sourcestack:render stack="css" }}
 ```
 
