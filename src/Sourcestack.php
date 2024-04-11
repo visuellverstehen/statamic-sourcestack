@@ -142,15 +142,15 @@ class Sourcestack extends Tags
     private function store(string|array $file): void
     {
         if (is_string($file)) {
-            $file = str_replace(' ', '', $file);
-    
-            if (! str_contains($file, ',')) {
+            if (str_contains($file, ',')) {
+                $file = explode(',', $file);
+            } else if (str_contains($file, '|')) {
+                $file = explode('|', $file);
+            } else {
                 $this->storeSourceInBlink($file);
-    
+                
                 return;
             }
-    
-            $file = explode(',', $file);
         }
     
         foreach ($file as $f) {
