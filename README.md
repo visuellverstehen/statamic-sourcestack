@@ -88,6 +88,12 @@ You can also use the tag alias `srcstk`. Sources can be added with the `src`, `s
 {{ srcstk:vite }}
 ```
 
+Like in a vite tag you can add multiple sources at once. Files must be separated by either a comma (`,`) or a pipe (`|`):
+
+```antlers
+{{ srcstk src="lightbox.js|gallery.js" }}
+```
+
 ### Dedicated stacks
 
 If you need multiple stacks for different sources, you can define dedicated stacks in the config file:
