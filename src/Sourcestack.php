@@ -20,7 +20,7 @@ class Sourcestack extends Tags
     
     public function __construct()
     {
-        $this->folder = config('sourcestack.base_dir');
+        $this->setFolder();
     }
     
     /**
