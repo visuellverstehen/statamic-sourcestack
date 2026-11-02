@@ -13,7 +13,7 @@ jobs:
         statamic: ['^5.0', '^6.0']
     name: Statamic ${{ matrix.statamic }} - PHP 8.3
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: shivammathur/setup-php@v2
         with:
