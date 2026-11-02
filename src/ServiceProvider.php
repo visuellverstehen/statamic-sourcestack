@@ -13,8 +13,6 @@ class ServiceProvider extends AddonServiceProvider
 
     public function bootAddon()
     {
-        parent::boot();
-        
         $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'sourcestack');
         
         if ($this->app->runningInConsole()) {
