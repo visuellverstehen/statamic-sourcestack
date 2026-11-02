@@ -3,10 +3,10 @@
 namespace VV\SourceStack;
 
 use Statamic\Facades\Blink;
+use Statamic\Support\Str;
 use Statamic\Tags\Parameters;
 use Statamic\Tags\Tags;
 use Statamic\Tags\Vite;
-use Stringy\StaticStringy as Stringy;
 
 class Sourcestack extends Tags
 {
@@ -128,7 +128,7 @@ class Sourcestack extends Tags
     private function setFolder(?string $folder = null): void
     {
         $this->folder = $folder ?? config('sourcestack.base_dir');
-        $this->folder = Stringy::ensureRight($this->folder, '/');
+        $this->folder = Str::ensureRight($this->folder, '/');
     }
     
     private function stackExists(): bool
